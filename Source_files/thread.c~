@@ -1,0 +1,107 @@
+/* Sliit_ID:it15005786
+Curtin_ID:19222233
+NAME:Thilina loku Bogahawatta*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+ 
+int number1,i,j,M,N,K; 
+int A[9][9]; //Initializing arrays by setting default values
+int total,sum2=0;
+FILE *file1;
+/* The mutex lock */
+
+pthread_mutex_t mutex;
+pthread_t tidp,tidc[9];       //Thread ID
+pthread_attr_t attr; //Set of thread attributes
+
+void *producer(void *param); /* the producer thread */
+void *consumer(void *param); /* the consumer thread */
+  
+/* Producer Thread */
+
+void *producer(void *param ) {
+
+
+pthread_mutex_lock(&mutex); //acquire the mutex lock
+
+//Get data from the textfiles
+
+for(i=0;i<M;i++){
+	for(j=0;j<N;j++){
+		if(fscanf(file1,"%d",&number1)!=EOF){
+		A[i][j]=number1;
+        	}
+	}
+}
+
+
+
+pthread_mutex_unlock(&mutex); //release the mutex lock
+
+pthread_exit(0);
+}
+
+void *consumer(void *param) {
+
+pthread_mutex_lock(&mutex); //acquire the mutex lock
+
+int va=(int)param;
+
+for(j=0;j<K;j++){
+
+sum2=sum2+A[va][j];
+}
+printf("\nValidation_Result_from_Process (%d):%d\n",va+1,tidc[va]);
+
+
+
+//total=total+sum2;
+//sum2=0;
+pthread_mutex_unlock(&mutex); //release the mutex lock
+pthread_exit(0);
+}
+
+
+int main(int argc,char *argv[] ){
+
+file1=fopen(argv[1],"r");
+M=atoi(argv[2]);
+N=atoi(argv[3]);
+
+
+A[M][N];
+
+/* Create the mutex lock */
+pthread_mutex_init(&mutex,NULL);
+/*Create the thread*/
+pthread_create(&tidp,NULL,producer,NULL);
+
+pthread_join(tidp,NULL);
+
+printf("   TABLE  \n");
+for(i=0;i<M;i++){
+	for(j=0;j<N;j++){
+	  printf("%d ",A[i][j]);
+	}
+printf("\n");
+}
+
+
+int r=0;
+/*Create the thread*/
+for(r=0;r<M;r++){
+	pthread_create(&tidc[r],NULL,consumer,(void*)r);
+}
+for(r=0;r<M;r++){
+	pthread_join(tidc[r],NULL);
+}
+
+
+pthread_mutex_destroy(&mutex);
+pthread_exit(0);
+
+
+}
+
